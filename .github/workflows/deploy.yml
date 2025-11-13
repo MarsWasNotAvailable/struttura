@@ -6,9 +6,8 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-
-permissions:
-  contents: write
+  release:
+    types: [created]
 
 jobs:
   build:
@@ -98,7 +97,6 @@ jobs:
         with:
           name: ${{ matrix.target }}-artifacts
           path: ./publish/${{ matrix.target }}
-          merge-multiple: false
 
       # Optional: Fastlane integration for mobile signing (commented)
       # - name: Install Fastlane
