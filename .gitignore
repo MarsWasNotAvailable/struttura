@@ -3,6 +3,8 @@ bin/
 obj/
 out/
 
+.intermediate/
+
 # Avalonia designer cache
 .avalonia/
 
