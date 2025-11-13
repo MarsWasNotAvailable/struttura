@@ -95,9 +95,9 @@ jobs:
           APP_NAME=$(basename "$PROJECT_FILE" .csproj)
           echo "APP_NAME is : $APP_NAME"
 
-          VERSION=$(dotnet msbuild "$PROJECT_FILE" -nologo -t:GetProperty -p:Property=Version -v:q)
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" "$PROJECT_FILE" || echo "0.0.0")
           echo "VERSION is : $VERSION"
-          
+
           echo "source is : ./publish/${{ matrix.target }}/$APP_NAME"
           echo "destination is : .."
 
