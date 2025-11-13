@@ -1,0 +1,118 @@
+name: Cross-Platform Build & Release (Avalonia)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    name: Build for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: win
+            os: windows-latest
+            rid: win-x64
+            ext: exe
+          - target: linux
+            os: ubuntu-latest
+            rid: linux-x64
+            ext: bin
+          - target: mac
+            os: macos-latest
+            rid: osx-x64
+            ext: app
+          - target: ios
+            os: macos-latest
+            rid: ios-arm64
+            ext: ipa
+          - target: android
+            os: ubuntu-latest
+            rid: android-arm64
+            ext: apk
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.306'
+
+      # --- Android setup ---
+      - name: Setup Java (for Android builds)
+        if: matrix.target == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Android SDK
+        if: matrix.target == 'android'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y android-sdk
+          echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
+          dotnet workload install android
+
+      # --- iOS/macOS setup ---
+      - name: Install Apple workloads
+        if: matrix.target == 'ios' || matrix.target == 'mac'
+        run: |
+          dotnet workload install ios maui
+          dotnet workload install macos
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build project
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish binaries
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o ./publish/${{ matrix.target }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}-artifacts
+          path: ./publish/${{ matrix.target }}
+
+      # --- Optional: Fastlane integration ---
+      # Uncomment and configure when ready to automate store uploads
+      # - name: Install Fastlane
+      #   if: matrix.target == 'ios' || matrix.target == 'android'
+      #   run: sudo gem install fastlane
+
+      # - name: Run Fastlane (example)
+      #   if: matrix.target == 'ios'
+      #   run: fastlane ios release
+      #   env:
+      #     APPLE_ID: ${{ secrets.APPLE_ID }}
+      #     APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist
+
+      - name: Show downloaded files
+        run: ls -R ./dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./dist/**/*

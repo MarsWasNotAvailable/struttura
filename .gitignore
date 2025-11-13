@@ -1,0 +1,48 @@
+# Build output
+bin/
+obj/
+out/
+
+# Avalonia designer cache
+.avalonia/
+
+# User-specific files
+*.user
+*.userosscache
+*.suo
+*.swp
+*.userprefs
+
+# IDE files
+.vscode/
+.idea/
+*.csproj.user
+*.sln.iml
+
+# Rider/Visual Studio settings
+*.DotSettings.user
+*.ReSharper/
+_ReSharper*/
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Package directories
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Tooling
+*.pdb
+*.mdb
+*.dbmdl
+
+# Avalonia publish artifacts
+publish/
+dist/
