@@ -82,17 +82,22 @@ jobs:
       - name: Rename binaries with version, date, and build number
         run: |
           DATE=$(date +'%Y-%m-%d')
-          BUILD=$GITHUB_RUN_NUMBER
-          PROJECT_FILE=$(find . -maxdepth 1 -name "*.csproj" | head -n 1)
-          APP_NAME=$(basename "$PROJECT_FILE" .csproj)
-          VERSION=$(dotnet msbuild "$PROJECT_FILE" -nologo -t:GetProperty -p:Property=Version -v:q)
-
           echo "Date is : $DATE"
-          echo "BUILD is : $BUILD"
+
+          BUILD=$GITHUB_RUN_NUMBER
+          echo "GITHUB_RUN_NUMBER is : $BUILD"
+
           echo "GITHUB_RUN_ATTEMPT is : $GITHUB_RUN_ATTEMPT"
+
+          PROJECT_FILE=$(find . -maxdepth 1 -name "*.csproj" | head -n 1)
           echo "PROJECT_FILE is : $PROJECT_FILE"
+
+          APP_NAME=$(basename "$PROJECT_FILE" .csproj)
           echo "APP_NAME is : $APP_NAME"
+
+          VERSION=$(dotnet msbuild "$PROJECT_FILE" -nologo -t:GetProperty -p:Property=Version -v:q)
           echo "VERSION is : $VERSION"
+          
           echo "source is : ./publish/${{ matrix.target }}/$APP_NAME"
           echo "destination is : .."
 
