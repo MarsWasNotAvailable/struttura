@@ -79,24 +79,17 @@ jobs:
       - name: Publish binaries
         run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o ./publish/${{ matrix.target }}
 
-      - name: Rename binaries with version, date, and build number
+      - name: Rename binaries for release
         run: |
           PROJECT_FILE=$(find . -maxdepth 1 -name "*.csproj" | head -n 1)
           APP_NAME=$(basename "$PROJECT_FILE" .csproj)
 
-          # Extract version from csproj
-          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" "$PROJECT_FILE" || echo "0.0.0")
-
-          # Cross-platform date using PowerShell Core
-          DATE=$(pwsh -Command "[DateTime]::UtcNow.ToString('yyyy-MM-dd')")
-
-          BUILD=$GITHUB_RUN_NUMBER
-
           SRC="./publish/${{ matrix.target }}/$APP_NAME"
-          DST="./publish/${{ matrix.target}}/${APP_NAME}_${DATE}_${VERSION}_${BUILD}${{ matrix.ext }}"
+          DST="./publish/${{ matrix.target}}/${APP_NAME}.${{ matrix.ext }}"
 
           echo "Renaming $SRC → $DST"
           mv "$SRC" "$DST" || (echo "Rename failed: source file missing" && exit 1)
+        shell: bash
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
