@@ -7,6 +7,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build for ${{ matrix.target }}
@@ -78,14 +81,22 @@ jobs:
 
       - name: Rename binaries with version, date, and build number
         run: |
-          ls ./publish/${{ matrix.target }}
-          echo $GITHUB_RUN_NUMBER
-          echo $(date +'%Y-%m-%d')
           DATE=$(date +'%Y-%m-%d')
           BUILD=$GITHUB_RUN_NUMBER
-          VERSION=$(dotnet msbuild struttura.csproj -nologo -t:GetProperty -p:Property=Version -v:q)
+          PROJECT_FILE=$(find . -maxdepth 1 -name "*.csproj" | head -n 1)
+          APP_NAME=$(basename "$PROJECT_FILE" .csproj)
+          VERSION=$(dotnet msbuild "$PROJECT_FILE" -nologo -t:GetProperty -p:Property=Version -v:q)
 
-          mv ./publish/${{ matrix.target }}/struttura ./publish/${{ matrix.target}}/${APP_NAME}_${DATE}_${VERSION}_${BUILD}${{ matrix.ext }}
+          echo "Date is : $DATE"
+          echo "BUILD is : $BUILD"
+          echo "GITHUB_RUN_ATTEMPT is : $GITHUB_RUN_ATTEMPT"
+          echo "PROJECT_FILE is : $PROJECT_FILE"
+          echo "APP_NAME is : $APP_NAME"
+          echo "VERSION is : $VERSION"
+          echo "source is : ./publish/${{ matrix.target }}/$APP_NAME"
+          echo "destination is : .."
+
+          mv ./publish/${{ matrix.target }}/$APP_NAME ./publish/${{ matrix.target}}/${APP_NAME}_${DATE}_${VERSION}_${BUILD}${{ matrix.ext }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
