@@ -6,8 +6,6 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-  release:
-    types: [created]
 
 jobs:
   build:
@@ -46,7 +44,6 @@ jobs:
         with:
           dotnet-version: '9.0.306'
 
-      # --- Android setup ---
       - name: Setup Java (for Android builds)
         if: matrix.target == 'android'
         uses: actions/setup-java@v4
@@ -62,7 +59,6 @@ jobs:
           echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
           dotnet workload install android
 
-      # --- iOS/macOS setup ---
       - name: Install Apple workloads
         if: matrix.target == 'ios' || matrix.target == 'mac'
         run: |
@@ -84,30 +80,7 @@ jobs:
           BUILD=$GITHUB_RUN_NUMBER
           VERSION=$(dotnet msbuild MyProject.csproj -nologo -t:GetProperty -p:Property=Version -v:q)
 
-          # Linux
-          if [[ "${{ matrix.target }}" == "linux" ]]; then
-            mv ./publish/linux/MyApp ./publish/linux/MyApp_${DATE}_${VERSION}_${BUILD}.bin
-          fi
-
-          # macOS
-          if [[ "${{ matrix.target }}" == "mac" ]]; then
-            mv ./publish/mac/MyApp ./publish/mac/MyApp_${DATE}_${VERSION}_${BUILD}.app
-          fi
-
-          # Windows
-          if [[ "${{ matrix.target }}" == "win" ]]; then
-            mv ./publish/windows/MyApp.exe ./publish/windows/MyApp_${DATE}_${VERSION}_${BUILD}.exe
-          fi
-
-          # iOS
-          if [[ "${{ matrix.target }}" == "ios" ]]; then
-            mv ./publish/ios/MyApp.ipa ./publish/ios/MyApp_${DATE}_${VERSION}_${BUILD}.ipa
-          fi
-
-          # Android
-          if [[ "${{ matrix.target }}" == "android" ]]; then
-            mv ./publish/android/MyApp.apk ./publish/android/MyApp_${DATE}_${VERSION}_${BUILD}.apk
-          fi
+          mv ./publish/${{ matrix.target }}/MyApp ./publish/${{ matrix.target }}/MyApp_${DATE}_${VERSION}_${BUILD}.${{ matrix.ext }}
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -115,8 +88,7 @@ jobs:
           name: ${{ matrix.target }}-artifacts
           path: ./publish/${{ matrix.target }}
 
-      # --- Optional: Fastlane integration ---
-      # Uncomment and configure when ready to automate store uploads
+      # Optional: Fastlane integration for mobile signing (commented)
       # - name: Install Fastlane
       #   if: matrix.target == 'ios' || matrix.target == 'android'
       #   run: sudo gem install fastlane
@@ -132,12 +104,13 @@ jobs:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
     permissions:
       contents: write
-
     steps:
-      - name: Download all artifacts (keep folders separated)
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts (keep folders separate)
         uses: actions/download-artifact@v4
         with:
           path: ./dist
@@ -146,7 +119,7 @@ jobs:
       - name: List downloaded files
         run: ls -R ./dist
 
-      # --- Optional: Zip platform folders for cleaner assets ---
+      # Optional: Zip platform folders for cleaner release packages
       # - name: Package each platform build
       #   run: |
       #     cd ./dist
@@ -155,17 +128,10 @@ jobs:
       #       zip -r "../${platform}.zip" "$dir"
       #     done
       #     cd ..
-      #   shell: bash
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            ./dist/**/*.apk
-            ./dist/**/*.app
-            ./dist/**/*.ipa
-            ./dist/**/*.bin
-            ./dist/**/*.exe
-            ./dist/*.zip
-          fail_on_unmatched_files: false
-          append_body: false
+      - name: Create GitHub Release automatically
+        run: |
+          gh release create "run-${GITHUB_RUN_NUMBER}" ./dist/*/* -t "Run #${GITHUB_RUN_NUMBER}" -n "Automated release for build ${GITHUB_RUN_NUMBER}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
