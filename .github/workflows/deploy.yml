@@ -140,9 +140,24 @@ jobs:
       #     done
       #     cd ..
 
-      - name: Create GitHub Release automatically
+      # delete previous release for same run number (safe rerun)
+      - name: Delete previous release if exists
         run: |
-          gh release create "run-${GITHUB_RUN_NUMBER}" ./dist/*/* -t "Run #${GITHUB_RUN_NUMBER}" -n "Automated release for build ${GITHUB_RUN_NUMBER}"
+          gh release delete "run-${GITHUB_RUN_NUMBER}" -y || echo "No previous release found"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # Create release with filtered binaries only
+      - name: Create GitHub Release
+        run: |
+          gh release create "run-${GITHUB_RUN_NUMBER}" \
+            ./dist/**/*.exe \
+            ./dist/**/*.apk \
+            ./dist/**/*.ipa \
+            ./dist/**/*.app \
+            ./dist/**/*.zip \
+            -t "Run #${GITHUB_RUN_NUMBER}" \
+            -n "Automated release for build ${GITHUB_RUN_NUMBER}" \
+            || echo "Release already exists or no matching files found, skipping."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
