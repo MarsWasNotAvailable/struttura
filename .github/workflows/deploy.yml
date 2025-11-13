@@ -49,13 +49,6 @@ jobs:
         with:
           dotnet-version: '9.0.306'
 
-      - name: Install .NET tools
-        run: |
-          dotnet tool install --global dotnet-xdt --version 2.*
-          dotnet tool install --global dotnet-date --version 1.*
-        env:
-          PATH: $PATH:/home/runner/.dotnet/tools
-
       - name: Setup Java (for Android builds)
         if: matrix.target == 'android'
         uses: actions/setup-java@v4
@@ -87,27 +80,27 @@ jobs:
         run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o ./publish/${{ matrix.target }}
 
       - name: Rename binaries with version, date, and build number
-        env:
-          PATH: $PATH:/home/runner/.dotnet/tools
+        shell: bash
         run: |
           PROJECT_FILE=$(find . -maxdepth 1 -name "*.csproj" | head -n 1)
-          echo "PROJECT_FILE is $PROJECT_FILE"
           APP_NAME=$(basename "$PROJECT_FILE" .csproj)
-          echo "APP_NAME is $APP_NAME"
 
-          VERSION=$(dotnet xdt select -f "$PROJECT_FILE" -x "/Project/PropertyGroup/Version/text()" || echo "0.0.0")
-          echo "VERSION is $VERSION"
-          DATE=$(dotnet date -f yyyy-MM-dd)
-          echo "DATE is $DATE"
+          # Extract version from csproj
+          VERSION=$(grep -oPm1 "(?<=<Version>)[^<]+" "$PROJECT_FILE" || echo "0.0.0")
+
+          # Use .NET to generate date (cross-platform)
+          DATE=$(dotnet new console -o tempdate --force > /dev/null 2>&1 \
+            && echo 'using System; Console.Write(DateTime.UtcNow.ToString("yyyy-MM-dd"));' > tempdate/Program.cs \
+            && dotnet run --project tempdate --no-build --nologo)
+
+          rm -rf tempdate
+
           BUILD=$GITHUB_RUN_NUMBER
-          echo "BUILD is $BUILD"
 
           SRC="./publish/${{ matrix.target }}/$APP_NAME"
-          echo "SRC is $SRC"
           DST="./publish/${{ matrix.target}}/${APP_NAME}_${DATE}_${VERSION}_${BUILD}.${{ matrix.ext }}"
-          echo "DST is $DST"
 
-          echo "Renaming $SRC → $DST"
+          echo "Renaming $SRC to $DST"
           mv "$SRC" "$DST" || (echo "Rename failed: source file missing" && exit 1)
 
       - name: Upload build artifacts
