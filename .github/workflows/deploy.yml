@@ -98,6 +98,7 @@ jobs:
         with:
           name: ${{ matrix.target }}-artifacts
           path: ./publish/${{ matrix.target }}
+          merge-multiple: false
 
       # Optional: Fastlane integration for mobile signing (commented)
       # - name: Install Fastlane
@@ -115,13 +116,12 @@ jobs:
     name: Create GitHub Release
     needs: build
     runs-on: ubuntu-latest
+    if: github.event_name == 'release'
     permissions:
       contents: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Download all artifacts (keep folders separate)
+    steps:
+      - name: Download all artifacts (keep folders separated)
         uses: actions/download-artifact@v4
         with:
           path: ./dist
@@ -130,7 +130,7 @@ jobs:
       - name: List downloaded files
         run: ls -R ./dist
 
-      # Optional: Zip platform folders for cleaner release packages
+      # --- Optional: Zip platform folders for cleaner assets ---
       # - name: Package each platform build
       #   run: |
       #     cd ./dist
@@ -139,25 +139,18 @@ jobs:
       #       zip -r "../${platform}.zip" "$dir"
       #     done
       #     cd ..
+      #   shell: bash
 
-      # delete previous release for same run number (safe rerun)
-      - name: Delete previous release if exists
-        run: |
-          gh release delete "run-${GITHUB_RUN_NUMBER}" -y || echo "No previous release found"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Create release with filtered binaries only
       - name: Create GitHub Release
-        run: |
-          gh release create "run-${GITHUB_RUN_NUMBER}" \
-            ./dist/**/*.exe \
-            ./dist/**/*.apk \
-            ./dist/**/*.ipa \
-            ./dist/**/*.app \
-            ./dist/**/*.zip \
-            -t "Run #${GITHUB_RUN_NUMBER}" \
-            -n "Automated release for build ${GITHUB_RUN_NUMBER}" \
-            || echo "Release already exists or no matching files found, skipping."
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ./dist/**/*.apk
+            ./dist/**/*.app
+            ./dist/**/*.ipa
+            ./dist/**/*.bin
+            ./dist/**/*.exe
+            ./dist/*.zip
+          fail_on_unmatched_files: false
+          append_body: false
+
