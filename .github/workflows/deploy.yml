@@ -34,6 +34,8 @@ jobs:
             os: ubuntu-latest
             rid: android-arm64
             ext: apk
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
