@@ -97,24 +97,44 @@ jobs:
       #     APPLE_ID: ${{ secrets.APPLE_ID }}
       #     APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
 
-  release:
-    name: Create GitHub Release
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'release'
-    permissions:
-      contents: write
+release:
+  name: Create GitHub Release
+  needs: build
+  runs-on: ubuntu-latest
+  if: github.event_name == 'release'
+  permissions:
+    contents: write
 
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./dist
+  steps:
+    - name: Download all artifacts (keep folders separated)
+      uses: actions/download-artifact@v4
+      with:
+        path: ./dist
+        merge-multiple: false
 
-      - name: Show downloaded files
-        run: ls -R ./dist
+    - name: List downloaded files
+      run: ls -R ./dist
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ./dist/**/*
+    # --- Optional: Zip platform folders for cleaner assets ---
+    # - name: Package each platform build
+    #   run: |
+    #     cd ./dist
+    #     for dir in */ ; do
+    #       platform=$(basename "$dir")
+    #       zip -r "../${platform}.zip" "$dir"
+    #     done
+    #     cd ..
+    #   shell: bash
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: |
+          ./dist/**/*.exe
+          ./dist/**/*.bin
+          ./dist/**/*.apk
+          ./dist/**/*.ipa
+          ./dist/**/*.app
+          ./dist/*.zip
+        fail_on_unmatched_files: false
+        append_body: false
