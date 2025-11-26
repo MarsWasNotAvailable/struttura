@@ -2,27 +2,35 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="360" d:DesignHeight="640"
+        mc:Ignorable="d"
+        SizeToContent="Manual"
+        MinWidth="360" MinHeight="640"
         x:Class="struttura.MainWindow"
         Title="struttura">
-    <DockPanel >
-        <TabControl DockPanel.Dock="Top">
-            <TabItem Header="Tab 1"/>
-            <TabItem Header="Tab 2"/>
-            <TabItem Header="Tab 3"/>
-            <TabItem Header="Tab 4"/>
-        </TabControl>
 
-        <TextBlock DockPanel.Dock="Top" Text="Input" 
-           HorizontalAlignment="Center" Margin="0,10"/>
-        <TextBlock DockPanel.Dock="Top" Text="Result"
-           HorizontalAlignment="Center" Margin="0,10"/>
+    <Viewbox Stretch="Uniform">
+        <DockPanel MinWidth="360" MinHeight="640" >
+            <TabControl DockPanel.Dock="Top">
+                <TabItem Header="Tab 1"/>
+                <TabItem Header="Tab 2"/>
+                <TabItem Header="Tab 3"/>
+                <TabItem Header="Tab 4"/>
+            </TabControl>
 
-        <UniformGrid DockPanel.Dock="Bottom" Columns="4" Rows="4">
-            <Button Content="1"/>
-            <Button Content="2"/>
-            <Button Content="3"/>
-            <Button Content="4"/>
-        </UniformGrid>
-    </DockPanel>
+            <TextBlock DockPanel.Dock="Top" Text="...Input..." 
+            HorizontalAlignment="Center" Margin="0 10"
+            FontStyle="Italic"
+            Name="DisplayInput"/>
+            <TextBlock DockPanel.Dock="Top" Text="...Result..."
+            HorizontalAlignment="Center" Margin="0 10"
+            FontStyle="Italic"/>
+
+            <UniformGrid DockPanel.Dock="Bottom" Columns="4" Rows="4">
+                <Button Content="1" Name="Character1" Click="Button_OnClick"/>
+                <Button Content="2" Name="Character2" Click="Button_OnClick" />
+                <Button Content="3" Name="Character3" Click="Button_OnClick" />
+                <Button Content="4" Name="Character4" Click="Button_OnClick" />
+            </UniformGrid>
+        </DockPanel>
+    </Viewbox>
 </Window>

@@ -48,6 +48,7 @@ jobs:
         with:
           dotnet-version: '9.0.306'
 
+      # Android setup
       - name: Setup Java (for Android builds)
         if: matrix.target == 'android'
         uses: actions/setup-java@v4
@@ -55,44 +56,48 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Android SDK
+      - name: Install Android workload
         if: matrix.target == 'android'
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y android-sdk
-          echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
-          dotnet workload install android
+        shell: pwsh
+        run: dotnet workload install android
 
+      # macOS + iOS workloads
       - name: Install Apple workloads
         if: matrix.target == 'ios' || matrix.target == 'mac'
+        shell: pwsh
         run: |
           dotnet workload install ios maui
           dotnet workload install macos
 
       - name: Restore dependencies
+        shell: pwsh
         run: dotnet restore
 
       - name: Build project
+        shell: pwsh
         run: dotnet build --configuration Release --no-restore
 
       - name: Publish binaries
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o ./publish/${{ matrix.target }}
+        shell: pwsh
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
 
-      - name: Rename binaries for release
+      - name: Rename binaries
+        shell: pwsh
         run: |
-          PROJECT_FILE=$(find . -maxdepth 1 -name "*.csproj" | head -n 1)
-          APP_NAME=$(basename "$PROJECT_FILE" .csproj)
+          $projectFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
+          $appName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
+          $ext = "${{ matrix.ext }}"
+          $target = "${{ matrix.target }}"
+          $src = "./publish/$target/$appName"
+          $dst = "./publish/$target/$appName.$ext"
+          if (-Not (Test-Path $src)) {
+              Write-Error "Source file missing: $src"
+              exit 1
+          }
+          Rename-Item -Path $src -NewName $dst -Force
+          Write-Host "Renamed to: $dst"
 
-          SRC="./publish/${{ matrix.target }}/$APP_NAME"
-          DST="./publish/${{ matrix.target}}/${APP_NAME}.${{ matrix.ext }}"
-
-          if [[ "${{ matrix.target }}" == "linux" || "${{ matrix.target }}" == "mac" ]]; then
-            echo "Renaming $SRC → $DST"
-            mv "$SRC" "$DST" || (echo "Rename failed: source file missing" && exit 1)
-          fi
-        shell: bash
-
-      - name: Upload build artifacts
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.target }}-artifacts
@@ -151,4 +156,3 @@ jobs:
             ./dist/*.zip
           fail_on_unmatched_files: false
           append_body: false
-
