@@ -95,7 +95,6 @@ jobs:
           $appBaseName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
 
           Get-ChildItem "./publish/" -Recurse | Write-Host ;
-          Get-ChildItem "./publish/mac" -Recurse | Write-Host ;
 
           if (Get-ChildItem "./publish/${{ matrix.target }}/" -Filter "$appBaseName.${{ matrix.ext }}" | Select-Object -First 1) {
             Write-Host "No renaming needed. A file matching publishing name was found."
@@ -166,6 +165,7 @@ jobs:
           files: |
             ./dist/**/*.apk
             ./dist/**/*.app
+            ./dist/**/*.appbundle
             ./dist/**/*.ipa
             ./dist/**/*.bin
             ./dist/**/*.exe
