@@ -86,6 +86,8 @@ jobs:
       - name: Rename binaries
         shell: pwsh
         run: |
+          Get-ChildItem "./publish/$target/" -Filter "*.${{ matrix.ext }}" | Write-Host ;
+          Get-ChildItem "./publish/$target/" -Recurse -Filter "*.${{ matrix.ext }}" | Write-Host ;
           if (Get-ChildItem "./publish/$target/" -Filter "*.${{ matrix.ext }}" | Select-Object -First 1) {
             Write-Host "wtf ?!"
             exit 0 ;
