@@ -89,13 +89,12 @@ jobs:
           $ext = "${{ matrix.ext }}"
           $target = "${{ matrix.target }}"
           $src = "./publish/$target/$appName"
-          $dst = "./publish/$target/$appName.$ext"
+          $dst = "$appName.$ext"
           if (-Not (Test-Path $src)) {
               Write-Error "Source file missing: $src"
               exit 1
           }
-          Write-Host "Source is : $src"
-          Write-Host "Renaming to: $dst"
+          Write-Host "Renaming $src to $dst"
           Rename-Item -Path $src -NewName $dst -Force
 
       - name: Upload Artifact
