@@ -28,16 +28,16 @@ jobs:
             os: macos-latest
             rid: osx-x64
             ext: app
-          - target: ios
-            os: macos-latest
-            rid: ios-arm64
-            ext: ipa
-            allow_failure: true
-          - target: android
-            os: ubuntu-latest
-            rid: android-arm64
-            ext: apk
-            allow_failure: true
+          # - target: ios
+          #   os: macos-latest
+          #   rid: ios-arm64
+          #   ext: ipa
+          #   allow_failure: true
+          # - target: android
+          #   os: ubuntu-latest
+          #   rid: android-arm64
+          #   ext: apk
+          #   allow_failure: true
     permissions:
       contents: write
 
@@ -86,7 +86,7 @@ jobs:
       - name: Rename binaries
         shell: pwsh
         run: |
-          Get-ChildItem | Write-Host ;
+          Get-ChildItem "./publish/$target/" | Write-Host ;
           $projectFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
           $appName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
           $ext = "${{ matrix.ext }}"
