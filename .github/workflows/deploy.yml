@@ -87,22 +87,25 @@ jobs:
         shell: pwsh
         run: |
           if (Get-ChildItem "./publish/$target/" -Filter "*.${{ matrix.ext }}" | Select-Object -First 1) {
+            Write-Host "wtf ?!"
             exit 0 ;
           }
-          Write-Host "Recurse listing : "
-          Get-ChildItem "./publish/" -Recurse | Write-Host ;
-          $projectFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
-          $appName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
-          $ext = "${{ matrix.ext }}"
-          $target = "${{ matrix.target }}"
-          $src = "./publish/$target/$appName"
-          $dst = "$appName.$ext"
-          if (-Not (Test-Path $src)) {
-              Write-Error "Source file missing: $src"
-              exit 1
+          else {
+            Write-Host "Recurse listing : "
+            Get-ChildItem "./publish/" -Recurse | Write-Host ;
+            $projectFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
+            $appName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
+            $ext = "${{ matrix.ext }}"
+            $target = "${{ matrix.target }}"
+            $src = "./publish/$target/$appName"
+            $dst = "$appName.$ext"
+            if (-Not (Test-Path $src)) {
+                Write-Error "Source file missing: $src"
+                exit 1
+            }
+            Write-Host "Renaming $src to $dst"
+            Rename-Item -Path $src -NewName $dst -Force
           }
-          Write-Host "Renaming $src to $dst"
-          Rename-Item -Path $src -NewName $dst -Force
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
