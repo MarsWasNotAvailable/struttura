@@ -94,8 +94,9 @@ jobs:
               Write-Error "Source file missing: $src"
               exit 1
           }
+          Write-Host "Source is : $src"
+          Write-Host "Renaming to: $dst"
           Rename-Item -Path $src -NewName $dst -Force
-          Write-Host "Renamed to: $dst"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
