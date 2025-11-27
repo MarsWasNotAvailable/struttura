@@ -86,7 +86,7 @@ jobs:
       - name: Rename binaries
         shell: pwsh
         run: |
-          if (Get-ChildItem -Filter "*.${{ matrix.ext }}" | Select-Object -First 1)) {
+          if (Get-ChildItem -Filter "*.${{ matrix.ext }}" | Select-Object -First 1) {
             exit 0 ;
           }
           Write-Host "Recurse listing : "
