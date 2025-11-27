@@ -34,12 +34,12 @@ jobs:
           #   ext: ipa
           #   allow_failure: true
           #   continue-on-error: true
-          - target: android
-            os: ubuntu-latest
-            rid: android-arm64
-            ext: apk
-            allow_failure: true
-            continue-on-error: true
+          # - target: android
+          #   os: ubuntu-latest
+          #   rid: android-arm64
+          #   ext: apk
+          #   allow_failure: true
+          #   continue-on-error: true
     permissions:
       contents: write
 
