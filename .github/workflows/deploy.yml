@@ -20,24 +20,29 @@ jobs:
             os: windows-latest
             rid: win-x64
             ext: exe
+            formfactor : desktop
           - target: linux
             os: ubuntu-latest
             rid: linux-x64
             ext: bin
+            formfactor : desktop
           - target: mac
             os: macos-latest
             rid: osx-x64
             ext: appbundle
+            formfactor : desktop
           # - target: ios
           #   os: macos-latest
           #   rid: ios-arm64
           #   ext: ipa
+          #   formfactor : mobile
           #   allow_failure: true
           #   continue-on-error: true
           # - target: android
           #   os: ubuntu-latest
           #   rid: android-arm64
           #   ext: apk
+          #   formfactor : mobile
           #   allow_failure: true
           #   continue-on-error: true
     permissions:
@@ -86,31 +91,38 @@ jobs:
       - name: Publish binaries
         shell: pwsh
         #run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false --property:PublishDir="./publish/${{ matrix.target }}"
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained true --property:PublishDir="./publish/${{ matrix.target }}"
 
+      #It could be that Avalonia requires the .DLL to run, meaning not possible to have single files executable
+      #in this case, the whole renaming is useless, can simply zip it all with an appropriate name
+      #BUT mobile workload will actually produce .APK and .IPA single files
+      #might need to differentiate between Desktop and Mobile and whatnot
       - name: Rename binaries
         shell: pwsh
         run: |
           $projectFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
-          $appBaseName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
+          $ApplicationBaseName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
 
           Get-ChildItem "./publish/" -Recurse | Write-Host ;
 
-          if (Get-ChildItem "./publish/${{ matrix.target }}/" -Filter "$appBaseName.${{ matrix.ext }}" | Select-Object -First 1) {
-            Write-Host "No renaming needed. A file matching publishing name was found."
-            exit 0 ;
+          $GeneratedExecutable = Get-ChildItem "./publish/${{ matrix.target }}/" -Filter "$ApplicationBaseName.${{ matrix.ext }}" | Select-Object -First 1 ;
+
+          if ($GeneratedExecutable.Exists) {
+            Write-Host "A file matching publishing name was found."
           }
           else {
+            $GeneratedExecutable = Get-ChildItem "./publish/${{ matrix.target }}/$ApplicationBaseName" | Select-Object -First 1 ;
 
-            $path = "./publish/${{ matrix.target }}/$appBaseName"
-            $NewName = "$appBaseName.${{ matrix.ext }}"
-            if (-Not (Test-Path $path)) {
-                Write-Error "Source file missing: $path"
+            if (-not $GeneratedExecutable.Exists) {
+                Write-Error "Generated Executable file is missing: $(GeneratedExecutable.FullName)"
                 exit 1
             }
-            Write-Host "Renaming $path to $NewName"
-            Rename-Item -Path $path -NewName $NewName -Force
           }
+
+          $NewName = "$ApplicationBaseName_${{ matrix.rid }}.${{ matrix.ext }}"
+          
+          Write-Host "Renaming $(GeneratedExecutable.FullName) to $NewName"
+          Rename-Item -Path $(GeneratedExecutable.FullName) -NewName $NewName -Force
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
