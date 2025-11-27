@@ -81,9 +81,8 @@ jobs:
 
       - name: Publish binaries
         shell: pwsh
-        run: |
-          $Env:TARGETNAME = "struttuBa.${{ matrix.ext }}"
-          dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
+        run:
+          dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}" --property:TARGETNAME="struttuBa.${{ matrix.ext }}"
 
       - name: Rename binaries
         shell: pwsh
