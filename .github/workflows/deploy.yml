@@ -85,7 +85,8 @@ jobs:
 
       - name: Publish binaries
         shell: pwsh
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
+        #run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
+        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false --property:PublishDir="./publish/${{ matrix.target }}"
 
       - name: Rename binaries
         shell: pwsh
@@ -94,6 +95,8 @@ jobs:
           $appBaseName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
 
           Get-ChildItem "./publish/" -Recurse | Write-Host ;
+          Get-ChildItem "./publish/mac" -Recurse | Write-Host ;
+
           if (Get-ChildItem "./publish/${{ matrix.target }}/" -Filter "$appBaseName.${{ matrix.ext }}" | Select-Object -First 1) {
             Write-Host "No renaming needed. A file matching publishing name was found."
             exit 0 ;
