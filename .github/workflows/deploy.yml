@@ -114,7 +114,7 @@ jobs:
             $GeneratedExecutable = Get-ChildItem "./publish/${{ matrix.target }}/$ApplicationBaseName" | Select-Object -First 1 ;
 
             if (-not $GeneratedExecutable.Exists) {
-                Write-Error "Generated Executable file is missing: $(GeneratedExecutable.FullName)"
+                Write-Error "Generated Executable file is missing: $($GeneratedExecutable.FullName)"
                 exit 1
             }
           }
