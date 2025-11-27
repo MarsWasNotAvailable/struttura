@@ -27,17 +27,19 @@ jobs:
           - target: mac
             os: macos-latest
             rid: osx-x64
-            ext: app
-          # - target: ios
-          #   os: macos-latest
-          #   rid: ios-arm64
-          #   ext: ipa
-          #   allow_failure: true
-          # - target: android
-          #   os: ubuntu-latest
-          #   rid: android-arm64
-          #   ext: apk
-          #   allow_failure: true
+            ext: appbundle
+          - target: ios
+            os: macos-latest
+            rid: ios-arm64
+            ext: ipa
+            allow_failure: true
+            #continue-on-error: true
+          - target: android
+            os: ubuntu-latest
+            rid: android-arm64
+            ext: apk
+            allow_failure: true
+            #continue-on-error: true
     permissions:
       contents: write
 
@@ -63,13 +65,15 @@ jobs:
         shell: pwsh
         run: dotnet workload install android
 
-      # macOS + iOS workloads
-      - name: Install Apple workloads
+      - name: Install OSX workloads
         if: matrix.target == 'ios' || matrix.target == 'mac'
         shell: pwsh
-        run: |
-          dotnet workload install ios maui
-          dotnet workload install macos
+        run: dotnet workload install macos
+
+      - name: Install iOS workloads
+        if: matrix.target == 'ios'
+        shell: pwsh
+        run: dotnet workload install ios
 
       - name: Restore dependencies
         shell: pwsh
@@ -91,6 +95,7 @@ jobs:
 
           Get-ChildItem "./publish/" -Recurse | Write-Host ;
           if (Get-ChildItem "./publish/${{ matrix.target }}/" -Filter "$appBaseName.${{ matrix.ext }}" | Select-Object -First 1) {
+            Write-Host "No renaming needed. A file matching publishing name was found."
             exit 0 ;
           }
           else {
