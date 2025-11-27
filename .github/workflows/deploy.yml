@@ -93,11 +93,12 @@ jobs:
         #run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
         run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained true --property:PublishDir="./publish/${{ matrix.target }}"
 
-      #It could be that Avalonia requires the .DLL to run, meaning not possible to have single files executable
-      #in this case, the whole renaming is useless, can simply zip it all with an appropriate name
+      #We're packaging as single file executable,
+      #using PublishSingleFile and IncludeNativeLibrariesForSelfExtract
+      #see : https://learn.microsoft.com/en-us/dotnet/core/deploying/single-file/overview?tabs=cli
+      #In the event you release as folder, you'll have to package as zip file, and simply name the archive appropriately
       #BUT mobile workload will actually produce .APK and .IPA single files
-      #might need to differentiate between Desktop and Mobile and whatnot
-      #UD : PublishSingleFile reduces the .DLL./SO file numbers, but still remains the skia,pdb files
+      #therefore, you might need to differentiate between Desktop and Mobile and whatnot
       - name: Rename binaries
         shell: pwsh
         run: |
@@ -120,7 +121,7 @@ jobs:
             }
           }
 
-          Write-Host "$ApplicationBaseName" ;
+          #Do not use lower dash, PS confuses it near the DollarSign symbols
           $NewName = "$ApplicationBaseName-${{ matrix.rid }}.${{ matrix.ext }}" ;
           
           Write-Host "Renaming $($GeneratedExecutable.FullName) to $NewName"

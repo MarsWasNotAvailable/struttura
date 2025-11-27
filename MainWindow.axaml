@@ -8,29 +8,31 @@
         x:Class="struttura.MainWindow"
         Title="struttura">
 
-    <Viewbox Stretch="Uniform">
-        <DockPanel MinWidth="360" MinHeight="640" >
-            <TabControl DockPanel.Dock="Top">
-                <TabItem Header="Tab 1"/>
-                <TabItem Header="Tab 2"/>
-                <TabItem Header="Tab 3"/>
-                <TabItem Header="Tab 4"/>
-            </TabControl>
+    <Viewbox Stretch="Uniform" >
+        <Border BorderBrush="Black" BorderThickness="4" CornerRadius="2">
+            <DockPanel MinWidth="360" MinHeight="640" Background="{DynamicResource ColorBackground}" >
+                <TabControl DockPanel.Dock="Top">
+                    <TabItem Header="Tab 1"/>
+                    <TabItem Header="Tab 2"/>
+                    <TabItem Header="Tab 3"/>
+                    <TabItem Header="Tab 4"/>
+                </TabControl>
 
-            <TextBlock DockPanel.Dock="Top" Text="...Input..." 
-            HorizontalAlignment="Center" Margin="0 10"
-            FontStyle="Italic"
-            Name="DisplayInput"/>
-            <TextBlock DockPanel.Dock="Top" Text="...Result..."
-            HorizontalAlignment="Center" Margin="0 10"
-            FontStyle="Italic"/>
+                <TextBlock DockPanel.Dock="Top" Text="...Input..." 
+                HorizontalAlignment="Center" Margin="0 10"
+                FontStyle="Italic"
+                Name="DisplayInput"/>
+                <TextBlock DockPanel.Dock="Top" Text="...Result..."
+                HorizontalAlignment="Center" Margin="0 10"
+                FontStyle="Italic"/>
 
-            <UniformGrid DockPanel.Dock="Bottom" Columns="4" Rows="4">
-                <Button Content="1" Name="Character1" Click="Button_OnClick"/>
-                <Button Content="2" Name="Character2" Click="Button_OnClick" />
-                <Button Content="3" Name="Character3" Click="Button_OnClick" />
-                <Button Content="4" Name="Character4" Click="Button_OnClick" />
-            </UniformGrid>
-        </DockPanel>
+                <UniformGrid DockPanel.Dock="Bottom" Columns="4" Rows="4">
+                    <Button Content="1" Name="Character1" Click="Button_OnClick"/>
+                    <Button Content="2" Name="Character2" Click="Button_OnClick" />
+                    <Button Content="3" Name="Character3" Click="Button_OnClick" />
+                    <Button Content="4" Name="Character4" Click="Button_OnClick" />
+                </UniformGrid>
+            </DockPanel>
+        </Border>
     </Viewbox>
 </Window>
