@@ -39,7 +39,7 @@ jobs:
             rid: android-arm64
             ext: apk
             allow_failure: true
-            #continue-on-error: true
+            continue-on-error: true
     permissions:
       contents: write
 
