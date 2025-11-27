@@ -81,15 +81,15 @@ jobs:
 
       - name: Publish binaries
         shell: pwsh
-        run: dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
+        run: |
+          $Env:TARGETNAME = "struttuBa.${{ matrix.ext }}"
+          dotnet publish -c Release -r ${{ matrix.rid }} --self-contained false -o "./publish/${{ matrix.target }}"
 
       - name: Rename binaries
         shell: pwsh
         run: |
           Write-Host "Recurse listing : "
           Get-ChildItem "./publish/" -Recurse | Write-Host ;
-          Write-Host "Under the target folder"
-          Get-ChildItem "./publish/$target/" | Write-Host ;
           $projectFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
           $appName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
           $ext = "${{ matrix.ext }}"
