@@ -33,7 +33,7 @@ jobs:
             rid: ios-arm64
             ext: ipa
             allow_failure: true
-            #continue-on-error: true
+            continue-on-error: true
           - target: android
             os: ubuntu-latest
             rid: android-arm64
