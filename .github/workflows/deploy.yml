@@ -86,6 +86,9 @@ jobs:
       - name: Rename binaries
         shell: pwsh
         run: |
+          Write-Host "Recurse listing : "
+          Get-ChildItem "./publish/" -Recurse | Write-Host ;
+          Write-Host "Under the target folder"
           Get-ChildItem "./publish/$target/" | Write-Host ;
           $projectFile = Get-ChildItem -Filter *.csproj | Select-Object -First 1
           $appName = [System.IO.Path]::GetFileNameWithoutExtension($projectFile.Name)
