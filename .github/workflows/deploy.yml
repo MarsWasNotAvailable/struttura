@@ -97,6 +97,7 @@ jobs:
       #in this case, the whole renaming is useless, can simply zip it all with an appropriate name
       #BUT mobile workload will actually produce .APK and .IPA single files
       #might need to differentiate between Desktop and Mobile and whatnot
+      #UD : PublishSingleFile reduces the .DLL./SO file numbers, but still remains the skia,pdb files
       - name: Rename binaries
         shell: pwsh
         run: |
@@ -119,7 +120,8 @@ jobs:
             }
           }
 
-          $NewName = "$ApplicationBaseName_${{ matrix.rid }}.${{ matrix.ext }}"
+          Write-Host "$ApplicationBaseName" ;
+          $NewName = "$ApplicationBaseName-${{ matrix.rid }}.${{ matrix.ext }}" ;
           
           Write-Host "Renaming $($GeneratedExecutable.FullName) to $NewName"
           Rename-Item -Path $($GeneratedExecutable.FullName) -NewName $NewName -Force
